@@ -1,117 +1,395 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <title>Support Portal</title>
-  <style>
-    body { 
-      font-family: -apple-system, system-ui, sans-serif; 
-      padding: 20px; 
-      text-align: center; 
-      background: var(--tg-theme-bg-color, #fff); 
-      color: var(--tg-theme-text-color, #000); 
-      
-      /* Prevent elastic scrolling on the body */
-      overflow-x: hidden;
-      touch-action: pan-y;
-    }
-
-    textarea { 
-      width: 100%; 
-      height: 120px; 
-      padding: 10px; 
-      border-radius: 8px; 
-      border: 1px solid #ccc; 
-      box-sizing: border-box; 
-      margin-bottom: 20px; 
-      background: var(--tg-theme-secondary-bg-color, #f0f0f0); 
-      color: var(--tg-theme-text-color, #000);
-      
-      /* THE FIX PART 2: Force 16px. This stops iOS from triggering the zoom. */
-      font-size: 16px !important; 
-    }
-
-    button { 
-      width: 100%; 
-      padding: 14px; 
-      background-color: var(--tg-theme-button-color, #3390ec); 
-      color: var(--tg-theme-button-text-color, #fff); 
-      border: none; 
-      border-radius: 8px; 
-      font-size: 16px; 
-      font-weight: bold; 
-      cursor: pointer; 
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Support App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Use Tailwind CSS for rapid styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    button:disabled { opacity: 0.7; cursor: not-allowed; }
-    #status { margin-top: 15px; font-size: 14px; color: #666; }
-  </style>
-</head>
-<body>
-
-  <h2 id="greeting">Loading...</h2>
-  <textarea id="desc" placeholder="Describe your issue..."></textarea>
-  <button id="btn" onclick="submitTicket()">Submit Ticket</button>
-  <div id="status"></div>
-
-  <script>
-    // --- CONFIGURATION ---
-    // PASTE YOUR GOOGLE DEPLOYMENT URL HERE (The one ending in /exec)
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDtEIYZMFQkLifxS55nhiN_11ABJcOng1xR101k__NrXP1B70HsbJWMGHFFM3oWpqiYQ/exec"; 
-
-    // --- LOGIC ---
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.ready();
-
-    // 1. Immediate User Detection (No Redirects to break it!)
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-      document.getElementById('greeting').innerText = `Hi, ${tg.initDataUnsafe.user.first_name}`;
-    } else {
-      document.getElementById('greeting').innerText = "Hi, Guest";
-    }
-
-    function submitTicket() {
-      const desc = document.getElementById('desc').value;
-      if (!desc) return tg.showAlert("Please describe the issue.");
-
-      const btn = document.getElementById('btn');
-      const status = document.getElementById('status');
-      
-      btn.disabled = true;
-      btn.innerText = "Processing with AI...";
-      status.innerText = "Sending to Support Team...";
-
-      // Prepare Data
-      const payload = {
-        description: desc,
-        userId: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0,
-        username: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.username : 'Unknown'
-      };
-
-      // Send to Google via 'fetch' (API Call)
-      fetch(GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          tg.showAlert(`Ticket Created! ID: ${data.taskId}`);
-          tg.close();
-        } else {
-          throw new Error(data.error);
+    <style>
+        /* Telegram Theme Integration */
+        body {
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+            touch-action: pan-y;
         }
-      })
-      .catch(err => {
-        btn.disabled = false;
-        btn.innerText = "Try Again";
-        status.innerText = "Error: " + err.message;
-      });
-    }
-  </script>
+        .card {
+            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 12px;
+        }
+        .btn-primary {
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+        .btn-text {
+            color: var(--tg-theme-link-color, #3390ec);
+        }
+        /* iOS Input Zoom Fix */
+        input, textarea, select { font-size: 16px !important; }
+        
+        /* Transitions */
+        .page { display: none; opacity: 0; transition: opacity 0.3s; }
+        .page.active { display: block; opacity: 1; }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <!-- HEADER & NAV -->
+    <header class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-800">
+        <h1 class="text-xl font-bold" id="app-title">Support</h1>
+        <button onclick="toggleMenu()" class="text-xl p-2"><i class="fa-solid fa-bars"></i></button>
+    </header>
+
+    <!-- SLIDE-OUT MENU -->
+    <div id="side-menu" class="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 bg-black bg-opacity-50 hidden">
+        <div class="absolute right-0 top-0 h-full w-64 bg-white dark:bg-gray-900 shadow-xl p-6 flex flex-col">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-lg font-bold">Menu</h2>
+                <button onclick="toggleMenu()" class="text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <nav class="flex-col flex gap-4 text-lg">
+                <a href="#" onclick="navigate('home')" class="py-2"><i class="fa-solid fa-house mr-2"></i> <span data-t="home">Home</span></a>
+                <a href="#" onclick="navigate('history')" class="py-2"><i class="fa-solid fa-list mr-2"></i> <span data-t="history">History</span></a>
+                <a href="#" onclick="navigate('faq')" class="py-2"><i class="fa-solid fa-circle-question mr-2"></i> FAQ</a>
+                <a href="#" onclick="navigate('contact')" class="py-2"><i class="fa-solid fa-envelope mr-2"></i> <span data-t="contact">Contact</span></a>
+                <div class="border-t border-gray-700 my-2"></div>
+                <a href="#" onclick="clearLang()" class="py-2 text-sm text-gray-500"><i class="fa-solid fa-globe mr-2"></i> Change Language</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow p-4 overflow-y-auto relative">
+
+        <!-- 1. LANGUAGE SELECTION (First Load Only) -->
+        <div id="view-language" class="page">
+            <div class="flex flex-col items-center justify-center h-full gap-4 mt-20">
+                <h2 class="text-2xl font-bold mb-6">Choose Language</h2>
+                <button onclick="setLang('en')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇺🇸 English</button>
+                <button onclick="setLang('de')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇩🇪 Deutsch</button>
+                <button onclick="setLang('pl')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇵🇱 Polski</button>
+                <button onclick="setLang('ua')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇺🇦 Українська</button>
+                <button onclick="setLang('ru')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇷🇺 Русский</button>
+            </div>
+        </div>
+
+        <!-- 2. HOME / DASHBOARD -->
+        <div id="view-home" class="page">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold mb-1"><span data-t="hello">Hello</span>, <span id="username">Guest</span></h2>
+                <p class="text-sm opacity-70">Client ID: <span id="client-id">...</span></p>
+            </div>
+
+            <!-- If user has NO active tickets (Logic handled in JS) -->
+            <div id="dashboard-actions" class="grid grid-cols-2 gap-4">
+                <div onclick="navigate('create-ticket', 'technical')" class="card p-6 flex flex-col items-center justify-center gap-3 cursor-pointer">
+                    <i class="fa-solid fa-screwdriver-wrench text-3xl text-blue-500"></i>
+                    <span class="text-center font-medium" data-t="tech_support">Tech Support</span>
+                </div>
+                <div onclick="navigate('contact')" class="card p-6 flex flex-col items-center justify-center gap-3 cursor-pointer">
+                    <i class="fa-regular fa-handshake text-3xl text-green-500"></i>
+                    <span class="text-center font-medium" data-t="new_client">New Client</span>
+                </div>
+                <div onclick="navigate('history')" class="card p-6 flex flex-col items-center justify-center gap-3 cursor-pointer col-span-2">
+                    <i class="fa-solid fa-clock-rotate-left text-3xl text-purple-500"></i>
+                    <span class="text-center font-medium" data-t="check_status">Check Status</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. CREATE TICKET FORM -->
+        <div id="view-create-ticket" class="page">
+            <h2 class="text-xl font-bold mb-4" data-t="describe_issue">Describe your issue</h2>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1 opacity-70" data-t="category">Category</label>
+                <select id="ticket-category" class="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-500">
+                    <option value="technical">Technical Issue</option>
+                    <option value="billing">Billing / Finance</option>
+                    <option value="feature">Feature Request</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <textarea id="ticket-desc" class="w-full h-32 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-500 mb-4" placeholder="Type here..."></textarea>
+            
+            <button id="submit-btn" onclick="submitTicket()" class="btn-primary w-full p-4 rounded-xl font-bold shadow-lg">
+                <span data-t="submit">Submit Ticket</span>
+            </button>
+            <p id="submit-status" class="text-center mt-4 text-sm hidden"></p>
+        </div>
+
+        <!-- 4. HISTORY VIEW -->
+        <div id="view-history" class="page">
+            <h2 class="text-xl font-bold mb-4" data-t="history">Your Tickets</h2>
+            <div id="history-loader" class="text-center mt-10"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
+            <div id="history-list" class="flex flex-col gap-3">
+                <!-- Items injected here -->
+            </div>
+            <div id="no-history" class="hidden text-center opacity-60 mt-10">No tickets found.</div>
+        </div>
+        
+        <!-- 5. CONTACT / NEW CLIENT -->
+        <div id="view-contact" class="page">
+            <h2 class="text-xl font-bold mb-4">Contact Us</h2>
+            <p class="mb-4 opacity-80">Interested in our services? Leave a message.</p>
+            <textarea id="contact-msg" class="w-full h-32 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 mb-4" placeholder="Your message..."></textarea>
+            <button onclick="submitContact()" class="btn-primary w-full p-4 rounded-xl font-bold">Send Message</button>
+        </div>
+        
+        <!-- 6. FAQ (Static for now) -->
+        <div id="view-faq" class="page">
+            <h2 class="text-xl font-bold mb-4">FAQ</h2>
+            <div class="space-y-3">
+                <div class="card p-4">
+                    <h3 class="font-bold mb-1">How do I reset password?</h3>
+                    <p class="text-sm opacity-80">Go to settings and click reset.</p>
+                </div>
+                <div class="card p-4">
+                    <h3 class="font-bold mb-1">Response time?</h3>
+                    <p class="text-sm opacity-80">Usually within 24 hours.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- CONFIGURATION ---
+        // PASTE YOUR GOOGLE SCRIPT URL HERE (From Phase 1)
+        const API_URL = "https://script.google.com/macros/s/AKfycbwDtEIYZMFQkLifxS55nhiN_11ABJcOng1xR101k__NrXP1B70HsbJWMGHFFM3oWpqiYQ/exec";
+
+        // --- TRANSLATIONS ---
+        const i18n = {
+            en: { hello: "Hello", tech_support: "Tech Support", new_client: "New Client", check_status: "Check Status", history: "History", submit: "Submit Ticket", home: "Home", contact: "Contact" },
+            pl: { hello: "Cześć", tech_support: "Wsparcie Tech", new_client: "Nowy Klient", check_status: "Sprawdź Status", history: "Historia", submit: "Wyślij Zgłoszenie", home: "Start", contact: "Kontakt" },
+            de: { hello: "Hallo", tech_support: "Technischer Support", new_client: "Neukunde", check_status: "Status Prüfen", history: "Verlauf", submit: "Ticket Senden", home: "Start", contact: "Kontakt" },
+            ua: { hello: "Привіт", tech_support: "Техпідтримка", new_client: "Новий Клієнт", check_status: "Перевірити Статус", history: "Історія", submit: "Надіслати", home: "Головна", contact: "Контакт" },
+            ru: { hello: "Привет", tech_support: "Техподдержка", new_client: "Новый Клиент", check_status: "Проверить Статус", history: "История", submit: "Отправить", home: "Главная", contact: "Контакт" }
+        };
+
+        // --- STATE ---
+        let state = {
+            lang: localStorage.getItem('app_lang'),
+            user: null
+        };
+
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            // 1. Get User Data
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                state.user = tg.initDataUnsafe.user;
+                document.getElementById('username').innerText = state.user.first_name;
+                document.getElementById('client-id').innerText = state.user.id;
+            }
+
+            // 2. Check Language
+            if (!state.lang) {
+                navigate('language');
+            } else {
+                updateTexts();
+                navigate('home');
+            }
+        };
+
+        // --- NAVIGATION ---
+        function navigate(viewName, subCategory = null) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.getElementById('side-menu').classList.add('hidden'); // Close menu
+            
+            // Show target
+            document.getElementById('view-' + viewName).classList.add('active');
+            
+            // Special Logic
+            if (viewName === 'create-ticket' && subCategory) {
+                document.getElementById('ticket-category').value = subCategory;
+            }
+            if (viewName === 'history') {
+                loadHistory();
+            }
+            
+            tg.MainButton.hide(); // Reset Main Button
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('side-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                setTimeout(() => menu.classList.remove('translate-x-full'), 10);
+            } else {
+                menu.classList.add('translate-x-full');
+                setTimeout(() => menu.classList.add('hidden'), 300);
+            }
+        }
+
+        // --- LANGUAGE ---
+        function setLang(code) {
+            state.lang = code;
+            localStorage.setItem('app_lang', code);
+            updateTexts();
+            navigate('home');
+        }
+
+        function clearLang() {
+            localStorage.removeItem('app_lang');
+            location.reload();
+        }
+
+        function updateTexts() {
+            const texts = i18n[state.lang] || i18n.en;
+            document.querySelectorAll('[data-t]').forEach(el => {
+                const key = el.getAttribute('data-t');
+                if (texts[key]) el.innerText = texts[key];
+            });
+        }
+
+        // --- API ACTIONS ---
+        
+        async function submitTicket() {
+            const desc = document.getElementById('ticket-desc').value;
+            const cat = document.getElementById('ticket-category').value;
+            const btn = document.getElementById('submit-btn');
+            
+            if(!desc) return tg.showAlert("Please describe the issue");
+
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            const payload = {
+                action: 'create_ticket',
+                userId: state.user ? state.user.id : 0,
+                username: state.user ? state.user.username : 'Guest',
+                description: desc,
+                category: cat,
+                lang: state.lang
+            };
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    tg.showAlert(`Ticket #${data.taskId} Created!`);
+                    document.getElementById('ticket-desc').value = ""; // Clear
+                    navigate('home');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                tg.showAlert("Error: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = i18n[state.lang].submit || "Submit Ticket";
+            }
+        }
+
+        async function loadHistory() {
+            const list = document.getElementById('history-list');
+            const loader = document.getElementById('history-loader');
+            const noData = document.getElementById('no-history');
+            
+            list.innerHTML = "";
+            loader.style.display = 'block';
+            noData.classList.add('hidden');
+
+            const payload = {
+                action: 'get_history',
+                userId: state.user ? state.user.id : 0
+            };
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }
+                });
+                const data = await res.json();
+                
+                loader.style.display = 'none';
+
+                if (data.tickets && data.tickets.length > 0) {
+                    data.tickets.forEach(t => {
+                        const item = document.createElement('div');
+                        item.className = "card p-4 border-l-4 border-blue-500";
+                        item.innerHTML = `
+                            <div class="flex justify-between">
+                                <span class="font-bold">#${t.id}</span>
+                                <span class="text-xs opacity-70">${t.date}</span>
+                            </div>
+                            <div class="font-medium mt-1">${t.name}</div>
+                            <div class="text-sm mt-2 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded inline-block uppercase text-xs">${t.status}</div>
+                        `;
+                        list.appendChild(item);
+                    });
+                } else {
+                    noData.classList.remove('hidden');
+                }
+            } catch (err) {
+                loader.style.display = 'none';
+                noData.innerText = "Error loading history";
+                noData.classList.remove('hidden');
+            }
+        }
+        
+        // Placeholder for contact form
+        function submitContact() {
+             tg.showAlert("Thank you! We will contact you soon.");
+             navigate('home');
+        }
+
+    </script>
 </body>
 </html>
+```
+
+---
+
+### Phase 3: WordPress Integration (The "One-Code" Solution)
+
+You asked to use this on WordPress. Since we built this as a web-hosted Mini App (SPA), you can embed it anywhere.
+
+**Option A: The Floating Widget (Chatbot Style)**
+Add this HTML code to your WordPress Footer (or use a "Header & Footer Scripts" plugin):
+
+```html
+<style>
+  /* The Floating Button */
+  #support-widget-btn {
+    position: fixed; bottom: 20px; right: 20px;
+    width: 60px; height: 60px; background: #3390ec; border-radius: 50%;
+    color: white; font-size: 30px; text-align: center; line-height: 60px;
+    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 9999;
+  }
+  /* The Chat Window */
+  #support-widget-frame {
+    position: fixed; bottom: 90px; right: 20px;
+    width: 350px; height: 500px; background: white;
+    border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    z-index: 9999; display: none; overflow: hidden;
+  }
+</style>
+
+<div id="support-widget-btn" onclick="toggleSupport()">💬</div>
+<iframe id="support-widget-frame" src="https://YOUR-GITHUB-USERNAME.github.io/support-portal/"></iframe>
+
+<script>
+  function toggleSupport() {
+    const frame = document.getElementById('support-widget-frame');
+    frame.style.display = frame.style.display === 'none' ? 'block' : 'none';
+  }
+</script>
