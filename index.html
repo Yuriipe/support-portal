@@ -272,7 +272,7 @@
                 username: state.user ? state.user.username : 'Guest',
                 description: desc,
                 category: cat,
-                lang: state.lang
+                lang: state.lang,
                 authData: tg.initData
             };
 
@@ -310,7 +310,7 @@
 
             const payload = {
                 action: 'get_history',
-                userId: state.user ? state.user.id : 0
+                userId: state.user ? state.user.id : 0,
                 authData: tg.initData
             };
 
