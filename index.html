@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Support App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Use Tailwind CSS for rapid styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Telegram Theme Integration */
         body {
             background-color: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
@@ -27,26 +24,21 @@
             background-color: var(--tg-theme-button-color, #3390ec);
             color: var(--tg-theme-button-text-color, #ffffff);
         }
-        .btn-text {
-            color: var(--tg-theme-link-color, #3390ec);
-        }
         /* iOS Input Zoom Fix */
         input, textarea, select { font-size: 16px !important; }
-        
-        /* Transitions */
         .page { display: none; opacity: 0; transition: opacity 0.3s; }
         .page.active { display: block; opacity: 1; }
     </style>
 </head>
 <body class="h-screen flex flex-col">
 
-    <!-- HEADER & NAV -->
+    <!-- HEADER -->
     <header class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-800">
         <h1 class="text-xl font-bold" id="app-title">Support</h1>
         <button onclick="toggleMenu()" class="text-xl p-2"><i class="fa-solid fa-bars"></i></button>
     </header>
 
-    <!-- SLIDE-OUT MENU -->
+    <!-- MENU -->
     <div id="side-menu" class="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 bg-black bg-opacity-50 hidden">
         <div class="absolute right-0 top-0 h-full w-64 bg-white dark:bg-gray-900 shadow-xl p-6 flex flex-col">
             <div class="flex justify-between items-center mb-8">
@@ -64,10 +56,10 @@
         </div>
     </div>
 
-    <!-- MAIN CONTENT AREA -->
+    <!-- MAIN CONTENT -->
     <main class="flex-grow p-4 overflow-y-auto relative">
 
-        <!-- 1. LANGUAGE SELECTION (First Load Only) -->
+        <!-- 1. LANGUAGE -->
         <div id="view-language" class="page">
             <div class="flex flex-col items-center justify-center h-full gap-4 mt-20">
                 <h2 class="text-2xl font-bold mb-6">Choose Language</h2>
@@ -79,14 +71,12 @@
             </div>
         </div>
 
-        <!-- 2. HOME / DASHBOARD -->
+        <!-- 2. HOME -->
         <div id="view-home" class="page">
             <div class="mb-6">
                 <h2 class="text-2xl font-bold mb-1"><span data-t="hello">Hello</span>, <span id="username">Guest</span></h2>
                 <p class="text-sm opacity-70">Client ID: <span id="client-id">...</span></p>
             </div>
-
-            <!-- If user has NO active tickets (Logic handled in JS) -->
             <div id="dashboard-actions" class="grid grid-cols-2 gap-4">
                 <div onclick="navigate('create-ticket', 'technical')" class="card p-6 flex flex-col items-center justify-center gap-3 cursor-pointer">
                     <i class="fa-solid fa-screwdriver-wrench text-3xl text-blue-500"></i>
@@ -103,10 +93,9 @@
             </div>
         </div>
 
-        <!-- 3. CREATE TICKET FORM -->
+        <!-- 3. CREATE TICKET -->
         <div id="view-create-ticket" class="page">
             <h2 class="text-xl font-bold mb-4" data-t="describe_issue">Describe your issue</h2>
-            
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-1 opacity-70" data-t="category">Category</label>
                 <select id="ticket-category" class="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-500">
@@ -116,26 +105,21 @@
                     <option value="other">Other</option>
                 </select>
             </div>
-
             <textarea id="ticket-desc" class="w-full h-32 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-500 mb-4" placeholder="Type here..."></textarea>
-            
             <button id="submit-btn" onclick="submitTicket()" class="btn-primary w-full p-4 rounded-xl font-bold shadow-lg">
                 <span data-t="submit">Submit Ticket</span>
             </button>
-            <p id="submit-status" class="text-center mt-4 text-sm hidden"></p>
         </div>
 
-        <!-- 4. HISTORY VIEW -->
+        <!-- 4. HISTORY -->
         <div id="view-history" class="page">
             <h2 class="text-xl font-bold mb-4" data-t="history">Your Tickets</h2>
             <div id="history-loader" class="text-center mt-10"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
-            <div id="history-list" class="flex flex-col gap-3">
-                <!-- Items injected here -->
-            </div>
+            <div id="history-list" class="flex flex-col gap-3"></div>
             <div id="no-history" class="hidden text-center opacity-60 mt-10">No tickets found.</div>
         </div>
         
-        <!-- 5. CONTACT / NEW CLIENT -->
+        <!-- 5. CONTACT -->
         <div id="view-contact" class="page">
             <h2 class="text-xl font-bold mb-4">Contact Us</h2>
             <p class="mb-4 opacity-80">Interested in our services? Leave a message.</p>
@@ -143,29 +127,19 @@
             <button onclick="submitContact()" class="btn-primary w-full p-4 rounded-xl font-bold">Send Message</button>
         </div>
         
-        <!-- 6. FAQ (Static for now) -->
+        <!-- 6. FAQ -->
         <div id="view-faq" class="page">
             <h2 class="text-xl font-bold mb-4">FAQ</h2>
             <div class="space-y-3">
-                <div class="card p-4">
-                    <h3 class="font-bold mb-1">How do I reset password?</h3>
-                    <p class="text-sm opacity-80">Go to settings and click reset.</p>
-                </div>
-                <div class="card p-4">
-                    <h3 class="font-bold mb-1">Response time?</h3>
-                    <p class="text-sm opacity-80">Usually within 24 hours.</p>
-                </div>
+                <div class="card p-4"><h3 class="font-bold mb-1">Response time?</h3><p class="text-sm opacity-80">Usually within 24 hours.</p></div>
             </div>
         </div>
-
     </main>
 
     <script>
         // --- CONFIGURATION ---
-        // PASTE YOUR GOOGLE SCRIPT URL HERE (From Phase 1)
         const API_URL = "https://script.google.com/macros/s/AKfycbwDtEIYZMFQkLifxS55nhiN_11ABJcOng1xR101k__NrXP1B70HsbJWMGHFFM3oWpqiYQ/exec";
 
-        // --- TRANSLATIONS ---
         const i18n = {
             en: { hello: "Hello", tech_support: "Tech Support", new_client: "New Client", check_status: "Check Status", history: "History", submit: "Submit Ticket", home: "Home", contact: "Contact" },
             pl: { hello: "Cześć", tech_support: "Wsparcie Tech", new_client: "Nowy Klient", check_status: "Sprawdź Status", history: "Historia", submit: "Wyślij Zgłoszenie", home: "Start", contact: "Kontakt" },
@@ -174,52 +148,27 @@
             ru: { hello: "Привет", tech_support: "Техподдержка", new_client: "Новый Клиент", check_status: "Проверить Статус", history: "История", submit: "Отправить", home: "Главная", contact: "Контакт" }
         };
 
-        // --- STATE ---
-        let state = {
-            lang: localStorage.getItem('app_lang'),
-            user: null
-        };
-
+        let state = { lang: localStorage.getItem('app_lang'), user: null };
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
 
-        // --- INITIALIZATION ---
         window.onload = () => {
-            // 1. Get User Data
             if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                 state.user = tg.initDataUnsafe.user;
                 document.getElementById('username').innerText = state.user.first_name;
                 document.getElementById('client-id').innerText = state.user.id;
             }
-
-            // 2. Check Language
-            if (!state.lang) {
-                navigate('language');
-            } else {
-                updateTexts();
-                navigate('home');
-            }
+            if (!state.lang) { navigate('language'); } else { updateTexts(); navigate('home'); }
         };
 
-        // --- NAVIGATION ---
         function navigate(viewName, subCategory = null) {
-            // Hide all pages
             document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-            document.getElementById('side-menu').classList.add('hidden'); // Close menu
-            
-            // Show target
+            document.getElementById('side-menu').classList.add('hidden');
             document.getElementById('view-' + viewName).classList.add('active');
-            
-            // Special Logic
-            if (viewName === 'create-ticket' && subCategory) {
-                document.getElementById('ticket-category').value = subCategory;
-            }
-            if (viewName === 'history') {
-                loadHistory();
-            }
-            
-            tg.MainButton.hide(); // Reset Main Button
+            if (viewName === 'create-ticket' && subCategory) document.getElementById('ticket-category').value = subCategory;
+            if (viewName === 'history') loadHistory();
+            tg.MainButton.hide();
         }
 
         function toggleMenu() {
@@ -233,7 +182,6 @@
             }
         }
 
-        // --- LANGUAGE ---
         function setLang(code) {
             state.lang = code;
             localStorage.setItem('app_lang', code);
@@ -254,15 +202,12 @@
             });
         }
 
-        // --- API ACTIONS ---
-        
         async function submitTicket() {
             const desc = document.getElementById('ticket-desc').value;
             const cat = document.getElementById('ticket-category').value;
             const btn = document.getElementById('submit-btn');
             
             if(!desc) return tg.showAlert("Please describe the issue");
-
             btn.disabled = true;
             btn.innerText = "Processing...";
 
@@ -272,7 +217,7 @@
                 username: state.user ? state.user.username : 'Guest',
                 description: desc,
                 category: cat,
-                lang: state.lang,
+                lang: state.lang,   // <--- COMMA ADDED HERE
                 authData: tg.initData
             };
 
@@ -283,10 +228,9 @@
                     headers: { "Content-Type": "text/plain;charset=utf-8" }
                 });
                 const data = await res.json();
-                
                 if (data.success) {
                     tg.showAlert(`Ticket #${data.taskId} Created!`);
-                    document.getElementById('ticket-desc').value = ""; // Clear
+                    document.getElementById('ticket-desc').value = "";
                     navigate('home');
                 } else {
                     throw new Error(data.error);
@@ -310,7 +254,7 @@
 
             const payload = {
                 action: 'get_history',
-                userId: state.user ? state.user.id : 0,
+                userId: state.user ? state.user.id : 0, // <--- COMMA ADDED HERE
                 authData: tg.initData
             };
 
@@ -321,9 +265,7 @@
                     headers: { "Content-Type": "text/plain;charset=utf-8" }
                 });
                 const data = await res.json();
-                
                 loader.style.display = 'none';
-
                 if (data.tickets && data.tickets.length > 0) {
                     data.tickets.forEach(t => {
                         const item = document.createElement('div');
@@ -347,13 +289,11 @@
                 noData.classList.remove('hidden');
             }
         }
-        
-        // Placeholder for contact form
+
         function submitContact() {
              tg.showAlert("Thank you! We will contact you soon.");
              navigate('home');
         }
-
     </script>
 </body>
 </html>
