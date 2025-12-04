@@ -108,6 +108,7 @@
         <!-- 3. CREATE TICKET -->
         <div id="view-create-ticket" class="page">
             <h2 class="text-xl font-bold mb-4" data-t="describe_issue">New Ticket</h2>
+            
             <div class="mb-4">
                 <label class="text-sm opacity-70" data-t="category">Category</label>
                 <select id="ticket-category" class="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 mt-1">
@@ -116,6 +117,13 @@
                     <option value="other">Other</option>
                 </select>
             </div>
+
+            <!-- Subject Field (NEW) -->
+            <div class="mb-4">
+                <label class="text-sm opacity-70" data-t="subject">Subject (Optional)</label>
+                <input type="text" id="ticket-subject" class="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 mt-1" placeholder="...">
+            </div>
+
             <textarea id="ticket-desc" class="w-full h-32 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 mb-4" placeholder="Describe issue..."></textarea>
             
             <!-- Image Upload -->
@@ -182,11 +190,11 @@
         
         // --- TRANSLATIONS ---
         const i18n = {
-            en: { hello: "Hello", tech_support: "Support", history: "History", submit: "Submit Ticket", home: "Home", contact: "Contact", describe_issue: "New Ticket", category: "Category" },
-            pl: { hello: "Cześć", tech_support: "Wsparcie", history: "Historia", submit: "Wyślij", home: "Start", contact: "Kontakt", describe_issue: "Nowe Zgłoszenie", category: "Kategoria" },
-            de: { hello: "Hallo", tech_support: "Support", history: "Verlauf", submit: "Senden", home: "Start", contact: "Kontakt", describe_issue: "Neues Ticket", category: "Kategorie" },
-            ua: { hello: "Привіт", tech_support: "Підтримка", history: "Історія", submit: "Надіслати", home: "Головна", contact: "Контакт", describe_issue: "Новий Тікет", category: "Категорія" },
-            ru: { hello: "Привет", tech_support: "Поддержка", history: "История", submit: "Отправить", home: "Главная", contact: "Контакт", describe_issue: "Новый Тикет", category: "Категория" }
+            en: { hello: "Hello", tech_support: "Support", history: "History", submit: "Submit Ticket", home: "Home", contact: "Contact", describe_issue: "New Ticket", category: "Category", subject: "Subject (Optional)" },
+            pl: { hello: "Cześć", tech_support: "Wsparcie", history: "Historia", submit: "Wyślij", home: "Start", contact: "Kontakt", describe_issue: "Nowe Zgłoszenie", category: "Kategoria", subject: "Temat (Opcjonalnie)" },
+            de: { hello: "Hallo", tech_support: "Support", history: "Verlauf", submit: "Senden", home: "Start", contact: "Kontakt", describe_issue: "Neues Ticket", category: "Kategorie", subject: "Betreff (Optional)" },
+            ua: { hello: "Привіт", tech_support: "Підтримка", history: "Історія", submit: "Надіслати", home: "Головна", contact: "Контакт", describe_issue: "Новий Тікет", category: "Категорія", subject: "Тема (Необов'язково)" },
+            ru: { hello: "Привет", tech_support: "Поддержка", history: "История", submit: "Отправить", home: "Главная", contact: "Контакт", describe_issue: "Новый Тикет", category: "Категория", subject: "Тема (Необязательно)" }
         };
 
         let state = { lang: localStorage.getItem('app_lang'), user: null };
@@ -291,6 +299,7 @@
         async function submitTicket() {
             const desc = document.getElementById('ticket-desc').value;
             const cat = document.getElementById('ticket-category').value;
+            const subject = document.getElementById('ticket-subject').value; // Get subject
             const btn = document.getElementById('submit-btn');
             
             if(!desc) return tg.showAlert("Describe issue");
@@ -301,6 +310,7 @@
                 userId: state.user ? state.user.id : 0,
                 username: state.user ? state.user.username : 'Guest',
                 description: desc,
+                subject: subject, // Send subject
                 category: cat,
                 lang: state.lang,
                 authData: tg.initData,
@@ -318,6 +328,7 @@
                 if (data.success) {
                     tg.showAlert(`Ticket #${data.taskId} Created!`);
                     document.getElementById('ticket-desc').value = "";
+                    document.getElementById('ticket-subject').value = "";
                     clearFile();
                     navigate('home');
                 } else throw new Error(data.error);
@@ -407,7 +418,7 @@
                                 <span>#${t.id}</span>
                                 <span class="text-xs opacity-50">${t.date}</span>
                             </div>
-                            <div>${t.name}</div>
+                            <div class="font-semibold truncate">${t.name}</div>
                             <div class="text-xs bg-gray-200 dark:bg-gray-700 px-2 rounded inline-block mt-1">${t.status}</div>
                         `;
                         list.appendChild(item);
