@@ -16,25 +16,39 @@
             overflow-x: hidden;
             touch-action: pan-y;
         }
-        .card {
-            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 12px;
+        .card { background-color: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; }
+        .btn-primary { background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #ffffff); }
+        
+        /* Chat Styling */
+        .msg-bubble { padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 15px; margin-bottom: 6px; word-wrap: break-word; }
+        .msg-user { background-color: var(--tg-theme-button-color, #3390ec); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg-agent { background-color: var(--tg-theme-secondary-bg-color, #e5e5ea); color: var(--tg-theme-text-color, #000); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .dark .msg-agent { background-color: #333; color: white; }
+
+        /* Input Area */
+        .chat-input-area {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background-color: var(--tg-theme-bg-color, #fff);
+            border-top: 1px solid var(--tg-theme-secondary-bg-color, #ccc);
+            padding: 10px; display: flex; align-items: center; gap: 8px;
+            z-index: 50;
         }
-        .btn-primary {
-            background-color: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-        }
+
         /* iOS Input Zoom Fix */
         input, textarea, select { font-size: 16px !important; }
         .page { display: none; opacity: 0; transition: opacity 0.3s; }
         .page.active { display: block; opacity: 1; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="h-screen flex flex-col">
 
     <!-- HEADER -->
-    <header class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-800">
-        <h1 class="text-xl font-bold" id="app-title">Support</h1>
+    <header class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 z-10 bg-[var(--tg-theme-bg-color)]">
+        <div class="flex items-center gap-3">
+            <button id="back-btn" onclick="navigate('home')" class="hidden text-xl"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 class="text-xl font-bold">Support</h1>
+        </div>
         <button onclick="toggleMenu()" class="text-xl p-2"><i class="fa-solid fa-bars"></i></button>
     </header>
 
@@ -48,26 +62,24 @@
             <nav class="flex-col flex gap-4 text-lg">
                 <a href="#" onclick="navigate('home')" class="py-2"><i class="fa-solid fa-house mr-2"></i> <span data-t="home">Home</span></a>
                 <a href="#" onclick="navigate('history')" class="py-2"><i class="fa-solid fa-list mr-2"></i> <span data-t="history">History</span></a>
-                <a href="#" onclick="navigate('faq')" class="py-2"><i class="fa-solid fa-circle-question mr-2"></i> FAQ</a>
                 <a href="#" onclick="navigate('contact')" class="py-2"><i class="fa-solid fa-envelope mr-2"></i> <span data-t="contact">Contact</span></a>
-                <div class="border-t border-gray-700 my-2"></div>
-                <a href="#" onclick="clearLang()" class="py-2 text-sm text-gray-500"><i class="fa-solid fa-globe mr-2"></i> Change Language</a>
+                <a href="#" onclick="clearLang()" class="py-2 text-sm text-gray-500 mt-4"><i class="fa-solid fa-globe mr-2"></i> Language</a>
             </nav>
         </div>
     </div>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-grow p-4 overflow-y-auto relative">
+    <main class="flex-grow p-4 overflow-y-auto relative pb-24">
 
         <!-- 1. LANGUAGE -->
         <div id="view-language" class="page">
             <div class="flex flex-col items-center justify-center h-full gap-4 mt-20">
                 <h2 class="text-2xl font-bold mb-6">Choose Language</h2>
-                <button onclick="setLang('en')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇺🇸 English</button>
-                <button onclick="setLang('de')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇩🇪 Deutsch</button>
-                <button onclick="setLang('pl')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇵🇱 Polski</button>
-                <button onclick="setLang('ua')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇺🇦 Українська</button>
-                <button onclick="setLang('ru')" class="w-full max-w-xs p-4 card font-bold text-center hover:opacity-80">🇷🇺 Русский</button>
+                <button onclick="setLang('en')" class="w-full max-w-xs p-4 card font-bold text-center">🇺🇸 English</button>
+                <button onclick="setLang('pl')" class="w-full max-w-xs p-4 card font-bold text-center">🇵🇱 Polski</button>
+                <button onclick="setLang('ru')" class="w-full max-w-xs p-4 card font-bold text-center">🇷🇺 Русский</button>
+                <button onclick="setLang('ua')" class="w-full max-w-xs p-4 card font-bold text-center">🇺🇦 Українська</button>
+                <button onclick="setLang('de')" class="w-full max-w-xs p-4 card font-bold text-center">🇩🇪 Deutsch</button>
             </div>
         </div>
 
@@ -77,78 +89,110 @@
                 <h2 class="text-2xl font-bold mb-1"><span data-t="hello">Hello</span>, <span id="username">Guest</span></h2>
                 <p class="text-sm opacity-70">Client ID: <span id="client-id">...</span></p>
             </div>
-            <div id="dashboard-actions" class="grid grid-cols-2 gap-4">
-                <div onclick="navigate('create-ticket', 'technical')" class="card p-6 flex flex-col items-center justify-center gap-3 cursor-pointer">
+            <div class="grid grid-cols-2 gap-4">
+                <div onclick="navigate('create-ticket', 'technical')" class="card p-6 flex flex-col items-center gap-3 cursor-pointer">
                     <i class="fa-solid fa-screwdriver-wrench text-3xl text-blue-500"></i>
-                    <span class="text-center font-medium" data-t="tech_support">Tech Support</span>
+                    <span class="font-medium" data-t="tech_support">Support</span>
                 </div>
-                <div onclick="navigate('contact')" class="card p-6 flex flex-col items-center justify-center gap-3 cursor-pointer">
-                    <i class="fa-regular fa-handshake text-3xl text-green-500"></i>
-                    <span class="text-center font-medium" data-t="new_client">New Client</span>
-                </div>
-                <div onclick="navigate('history')" class="card p-6 flex flex-col items-center justify-center gap-3 cursor-pointer col-span-2">
+                <div onclick="navigate('history')" class="card p-6 flex flex-col items-center gap-3 cursor-pointer">
                     <i class="fa-solid fa-clock-rotate-left text-3xl text-purple-500"></i>
-                    <span class="text-center font-medium" data-t="check_status">Check Status</span>
+                    <span class="font-medium" data-t="history">History</span>
+                </div>
+                <div onclick="navigate('contact')" class="card p-6 flex flex-col items-center gap-3 cursor-pointer col-span-2">
+                     <i class="fa-regular fa-envelope text-3xl text-green-500"></i>
+                     <span class="font-medium" data-t="contact">Contact</span>
                 </div>
             </div>
         </div>
 
         <!-- 3. CREATE TICKET -->
         <div id="view-create-ticket" class="page">
-            <h2 class="text-xl font-bold mb-4" data-t="describe_issue">Describe your issue</h2>
+            <h2 class="text-xl font-bold mb-4" data-t="describe_issue">New Ticket</h2>
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 opacity-70" data-t="category">Category</label>
-                <select id="ticket-category" class="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-500">
-                    <option value="technical">Technical Issue</option>
-                    <option value="billing">Billing / Finance</option>
-                    <option value="feature">Feature Request</option>
+                <label class="text-sm opacity-70" data-t="category">Category</label>
+                <select id="ticket-category" class="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 mt-1">
+                    <option value="technical">Technical</option>
+                    <option value="billing">Billing</option>
                     <option value="other">Other</option>
                 </select>
             </div>
-            <textarea id="ticket-desc" class="w-full h-32 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-500 mb-4" placeholder="Type here..."></textarea>
-            <button id="submit-btn" onclick="submitTicket()" class="btn-primary w-full p-4 rounded-xl font-bold shadow-lg">
-                <span data-t="submit">Submit Ticket</span>
-            </button>
+            <textarea id="ticket-desc" class="w-full h-32 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 mb-4" placeholder="Describe issue..."></textarea>
+            
+            <!-- Image Upload -->
+            <div class="mb-4">
+                <label class="flex items-center gap-2 p-3 card cursor-pointer w-full justify-center">
+                    <i class="fa-solid fa-paperclip text-gray-500"></i>
+                    <span id="create-file-name" class="text-sm">Attach Image</span>
+                    <input type="file" id="create-file-input" accept="image/*" class="hidden" onchange="previewFile('create')">
+                </label>
+            </div>
+            
+            <button id="submit-btn" onclick="submitTicket()" class="btn-primary w-full p-4 rounded-xl font-bold" data-t="submit">Submit</button>
         </div>
 
         <!-- 4. HISTORY -->
         <div id="view-history" class="page">
-            <h2 class="text-xl font-bold mb-4" data-t="history">Your Tickets</h2>
+            <h2 class="text-xl font-bold mb-4" data-t="history">History</h2>
             <div id="history-loader" class="text-center mt-10"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
             <div id="history-list" class="flex flex-col gap-3"></div>
             <div id="no-history" class="hidden text-center opacity-60 mt-10">No tickets found.</div>
         </div>
+
+        <!-- 5. CHAT (Two-Way) -->
+        <div id="view-chat" class="page h-full">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-lg font-bold">Ticket <span id="chat-id">#...</span></h2>
+                <button onclick="loadTicketChat(currentTicketId)" class="text-sm opacity-70"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+            
+            <div id="chat-messages" class="flex flex-col gap-2 overflow-y-auto pb-4" style="height: calc(100vh - 180px);">
+                <!-- Messages go here -->
+            </div>
+            
+            <!-- Sticky Input Area -->
+            <div class="chat-input-area">
+                <label class="p-2 cursor-pointer text-gray-500 hover:text-blue-500">
+                    <i class="fa-solid fa-paperclip text-xl"></i>
+                    <input type="file" id="chat-file-input" accept="image/*" class="hidden" onchange="previewFile('chat')">
+                </label>
+                <input type="text" id="chat-input" class="flex-grow p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border-none outline-none" placeholder="Reply...">
+                <button onclick="sendReply()" class="p-2 text-blue-500 font-bold"><i class="fa-solid fa-paper-plane text-xl"></i></button>
+            </div>
+            <!-- File Preview Popup -->
+            <div id="file-preview-area" class="fixed bottom-16 left-4 right-4 bg-gray-800 text-white p-2 rounded-lg text-sm flex justify-between hidden z-50">
+                <span id="file-preview-name">image.png</span>
+                <button onclick="clearFile()" class="text-red-400 font-bold">X</button>
+            </div>
+        </div>
         
-        <!-- 5. CONTACT -->
+        <!-- 6. CONTACT -->
         <div id="view-contact" class="page">
-            <h2 class="text-xl font-bold mb-4">Contact Us</h2>
-            <p class="mb-4 opacity-80">Interested in our services? Leave a message.</p>
+            <h2 class="text-xl font-bold mb-4" data-t="contact">Contact Us</h2>
+            <p class="mb-4 opacity-80">Send us a general inquiry.</p>
             <textarea id="contact-msg" class="w-full h-32 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 mb-4" placeholder="Your message..."></textarea>
             <button onclick="submitContact()" class="btn-primary w-full p-4 rounded-xl font-bold">Send Message</button>
         </div>
-        
-        <!-- 6. FAQ -->
-        <div id="view-faq" class="page">
-            <h2 class="text-xl font-bold mb-4">FAQ</h2>
-            <div class="space-y-3">
-                <div class="card p-4"><h3 class="font-bold mb-1">Response time?</h3><p class="text-sm opacity-80">Usually within 24 hours.</p></div>
-            </div>
-        </div>
+
     </main>
 
     <script>
         // --- CONFIGURATION ---
+        // PASTE YOUR GOOGLE DEPLOYMENT URL HERE
         const API_URL = "https://script.google.com/macros/s/AKfycbwDtEIYZMFQkLifxS55nhiN_11ABJcOng1xR101k__NrXP1B70HsbJWMGHFFM3oWpqiYQ/exec";
-
+        
+        // --- TRANSLATIONS ---
         const i18n = {
-            en: { hello: "Hello", tech_support: "Tech Support", new_client: "New Client", check_status: "Check Status", history: "History", submit: "Submit Ticket", home: "Home", contact: "Contact" },
-            pl: { hello: "Cześć", tech_support: "Wsparcie Tech", new_client: "Nowy Klient", check_status: "Sprawdź Status", history: "Historia", submit: "Wyślij Zgłoszenie", home: "Start", contact: "Kontakt" },
-            de: { hello: "Hallo", tech_support: "Technischer Support", new_client: "Neukunde", check_status: "Status Prüfen", history: "Verlauf", submit: "Ticket Senden", home: "Start", contact: "Kontakt" },
-            ua: { hello: "Привіт", tech_support: "Техпідтримка", new_client: "Новий Клієнт", check_status: "Перевірити Статус", history: "Історія", submit: "Надіслати", home: "Головна", contact: "Контакт" },
-            ru: { hello: "Привет", tech_support: "Техподдержка", new_client: "Новый Клиент", check_status: "Проверить Статус", history: "История", submit: "Отправить", home: "Главная", contact: "Контакт" }
+            en: { hello: "Hello", tech_support: "Support", history: "History", submit: "Submit Ticket", home: "Home", contact: "Contact", describe_issue: "New Ticket", category: "Category" },
+            pl: { hello: "Cześć", tech_support: "Wsparcie", history: "Historia", submit: "Wyślij", home: "Start", contact: "Kontakt", describe_issue: "Nowe Zgłoszenie", category: "Kategoria" },
+            de: { hello: "Hallo", tech_support: "Support", history: "Verlauf", submit: "Senden", home: "Start", contact: "Kontakt", describe_issue: "Neues Ticket", category: "Kategorie" },
+            ua: { hello: "Привіт", tech_support: "Підтримка", history: "Історія", submit: "Надіслати", home: "Головна", contact: "Контакт", describe_issue: "Новий Тікет", category: "Категорія" },
+            ru: { hello: "Привет", tech_support: "Поддержка", history: "История", submit: "Отправить", home: "Главная", contact: "Контакт", describe_issue: "Новый Тикет", category: "Категория" }
         };
 
         let state = { lang: localStorage.getItem('app_lang'), user: null };
+        let currentTicketId = null;
+        let selectedFile = { base64: null, name: null };
+        
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
@@ -159,39 +203,49 @@
                 document.getElementById('username').innerText = state.user.first_name;
                 document.getElementById('client-id').innerText = state.user.id;
             }
-            if (!state.lang) { navigate('language'); } else { updateTexts(); navigate('home'); }
+            if (!state.lang) {
+                navigate('language');
+            } else {
+                updateTexts();
+                navigate('home');
+            }
+            tg.BackButton.onClick(() => navigate('home'));
         };
 
-        function navigate(viewName, subCategory = null) {
+        function navigate(view, param) {
             document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
             document.getElementById('side-menu').classList.add('hidden');
-            document.getElementById('view-' + viewName).classList.add('active');
-            if (viewName === 'create-ticket' && subCategory) document.getElementById('ticket-category').value = subCategory;
-            if (viewName === 'history') loadHistory();
-            tg.MainButton.hide();
+            document.getElementById('view-' + view).classList.add('active');
+            
+            if (view === 'home' || view === 'language') { 
+                document.getElementById('back-btn').classList.add('hidden'); 
+                tg.BackButton.hide(); 
+            } else { 
+                document.getElementById('back-btn').classList.remove('hidden'); 
+                tg.BackButton.show(); 
+            }
+
+            if (view === 'create-ticket' && param) document.getElementById('ticket-category').value = param;
+            if (view === 'history') loadHistory();
+            if (view === 'chat' && param) { currentTicketId = param; loadTicketChat(param); }
         }
 
         function toggleMenu() {
             const menu = document.getElementById('side-menu');
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                setTimeout(() => menu.classList.remove('translate-x-full'), 10);
-            } else {
-                menu.classList.add('translate-x-full');
-                setTimeout(() => menu.classList.add('hidden'), 300);
-            }
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('translate-x-full');
         }
 
         function setLang(code) {
-            state.lang = code;
-            localStorage.setItem('app_lang', code);
+            state.lang = code; 
+            localStorage.setItem('app_lang', code); 
             updateTexts();
             navigate('home');
         }
-
-        function clearLang() {
-            localStorage.removeItem('app_lang');
-            location.reload();
+        
+        function clearLang() { 
+            localStorage.removeItem('app_lang'); 
+            location.reload(); 
         }
 
         function updateTexts() {
@@ -202,14 +256,45 @@
             });
         }
 
+        // --- FILE HANDLING ---
+        function previewFile(mode) {
+            const inputId = mode === 'create' ? 'create-file-input' : 'chat-file-input';
+            const file = document.getElementById(inputId).files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) return tg.showAlert("File too large (Max 5MB)");
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedFile.base64 = e.target.result;
+                selectedFile.name = file.name;
+                
+                if (mode === 'create') {
+                    document.getElementById('create-file-name').innerText = file.name;
+                } else {
+                    document.getElementById('file-preview-area').classList.remove('hidden');
+                    document.getElementById('file-preview-name').innerText = file.name;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearFile() {
+            selectedFile = { base64: null, name: null };
+            document.getElementById('create-file-name').innerText = "Attach Image";
+            document.getElementById('create-file-input').value = "";
+            document.getElementById('chat-file-input').value = "";
+            document.getElementById('file-preview-area').classList.add('hidden');
+        }
+
+        // --- API ACTIONS ---
         async function submitTicket() {
             const desc = document.getElementById('ticket-desc').value;
             const cat = document.getElementById('ticket-category').value;
             const btn = document.getElementById('submit-btn');
             
-            if(!desc) return tg.showAlert("Please describe the issue");
-            btn.disabled = true;
-            btn.innerText = "Processing...";
+            if(!desc) return tg.showAlert("Describe issue");
+            btn.disabled = true; btn.innerText = "Sending...";
 
             const payload = {
                 action: 'create_ticket',
@@ -217,29 +302,76 @@
                 username: state.user ? state.user.username : 'Guest',
                 description: desc,
                 category: cat,
-                lang: state.lang,   // <--- COMMA ADDED HERE
-                authData: tg.initData
+                lang: state.lang,
+                authData: tg.initData,
+                imageBase64: selectedFile.base64,
+                imageName: selectedFile.name
             };
 
             try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                    headers: { "Content-Type": "text/plain;charset=utf-8" }
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload), 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" } 
                 });
                 const data = await res.json();
                 if (data.success) {
                     tg.showAlert(`Ticket #${data.taskId} Created!`);
                     document.getElementById('ticket-desc').value = "";
+                    clearFile();
                     navigate('home');
-                } else {
-                    throw new Error(data.error);
-                }
+                } else throw new Error(data.error);
+            } catch (err) { 
+                tg.showAlert("Error: " + err.message); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerText = "Submit"; 
+            }
+        }
+
+        async function sendReply() {
+            const input = document.getElementById('chat-input');
+            const text = input.value;
+            
+            if (!text && !selectedFile.base64) return;
+
+            // Optimistic UI Update
+            const container = document.getElementById('chat-messages');
+            const tempBubble = document.createElement('div');
+            tempBubble.className = "msg-bubble msg-user self-end opacity-50";
+            tempBubble.innerText = text || "[Image]";
+            container.appendChild(tempBubble);
+            container.scrollTop = container.scrollHeight;
+            
+            input.value = ""; // Clear input immediately
+            document.getElementById('file-preview-area').classList.add('hidden');
+
+            const payload = {
+                action: 'reply_ticket',
+                taskId: currentTicketId,
+                text: text,
+                userId: state.user ? state.user.id : 0,
+                authData: tg.initData,
+                lang: state.lang,
+                imageBase64: selectedFile.base64,
+                imageName: selectedFile.name
+            };
+            
+            // Clear file AFTER creating payload
+            const tempFile = { ...selectedFile };
+            clearFile(); 
+
+            try {
+                await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload), 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" } 
+                });
+                // Refresh chat to show official message
+                loadTicketChat(currentTicketId);
             } catch (err) {
-                tg.showAlert("Error: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = i18n[state.lang].submit || "Submit Ticket";
+                tg.showAlert("Failed to send reply");
+                tempBubble.style.backgroundColor = "red";
             }
         }
 
@@ -248,48 +380,81 @@
             const loader = document.getElementById('history-loader');
             const noData = document.getElementById('no-history');
             
-            list.innerHTML = "";
+            list.innerHTML = ""; 
             loader.style.display = 'block';
             noData.classList.add('hidden');
 
-            const payload = {
-                action: 'get_history',
-                userId: state.user ? state.user.id : 0, // <--- COMMA ADDED HERE
-                authData: tg.initData
-            };
-
             try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                    headers: { "Content-Type": "text/plain;charset=utf-8" }
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'get_history', 
+                        userId: state.user ? state.user.id : 0, 
+                        authData: tg.initData 
+                    }), 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" } 
                 });
                 const data = await res.json();
                 loader.style.display = 'none';
+                
                 if (data.tickets && data.tickets.length > 0) {
                     data.tickets.forEach(t => {
                         const item = document.createElement('div');
-                        item.className = "card p-4 border-l-4 border-blue-500";
+                        item.className = "card p-4 border-l-4 border-blue-500 cursor-pointer hover:opacity-80 transition";
+                        item.onclick = () => navigate('chat', t.id);
                         item.innerHTML = `
-                            <div class="flex justify-between">
-                                <span class="font-bold">#${t.id}</span>
-                                <span class="text-xs opacity-70">${t.date}</span>
+                            <div class="flex justify-between font-bold">
+                                <span>#${t.id}</span>
+                                <span class="text-xs opacity-50">${t.date}</span>
                             </div>
-                            <div class="font-medium mt-1">${t.name}</div>
-                            <div class="text-sm mt-2 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded inline-block uppercase text-xs">${t.status}</div>
+                            <div>${t.name}</div>
+                            <div class="text-xs bg-gray-200 dark:bg-gray-700 px-2 rounded inline-block mt-1">${t.status}</div>
                         `;
                         list.appendChild(item);
                     });
                 } else {
                     noData.classList.remove('hidden');
                 }
-            } catch (err) {
-                loader.style.display = 'none';
-                noData.innerText = "Error loading history";
+            } catch (err) { 
+                loader.style.display = 'none'; 
                 noData.classList.remove('hidden');
+                noData.innerText = "Error loading history.";
             }
         }
 
+        async function loadTicketChat(taskId) {
+            const container = document.getElementById('chat-messages');
+            document.getElementById('chat-id').innerText = "#" + taskId;
+            
+            try {
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'get_ticket_details', 
+                        taskId, 
+                        userId: state.user ? state.user.id : 0, 
+                        authData: tg.initData 
+                    }), 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" } 
+                });
+                const data = await res.json();
+                container.innerHTML = "";
+                
+                if (data.updates && data.updates.length > 0) {
+                    data.updates.forEach(msg => {
+                        const isUser = !msg.isAgent; 
+                        const bubble = document.createElement('div');
+                        bubble.className = `msg-bubble ${isUser ? 'msg-user' : 'msg-agent'} flex flex-col`;
+                        bubble.innerHTML = `<span>${msg.text}</span><span class="text-[10px] opacity-70 mt-1 self-end">${msg.date}</span>`;
+                        container.appendChild(bubble);
+                    });
+                    container.scrollTop = container.scrollHeight;
+                } else {
+                    container.innerHTML = `<div class="text-center opacity-50 mt-4">No messages yet.</div>`;
+                }
+            } catch (err) {}
+        }
+        
         function submitContact() {
              tg.showAlert("Thank you! We will contact you soon.");
              navigate('home');
